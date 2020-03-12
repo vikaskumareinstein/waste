@@ -4,15 +4,19 @@
 import sys
 import turtle
 import random
+import json
 
 
 count=0
 CELL_SIZE = 10
 HX=15
 HY=20
+list_x=[]
+list_y=[]
 
 
-class LifeBoard:
+
+class GameOfLife:
     def __init__(self, xsize, ysize):
         self.state = set()
         self.xsize, self.ysize = xsize, ysize
@@ -34,6 +38,27 @@ class LifeBoard:
                 if random.random() > 0.5:
                     self.set(i, j)
 
+
+    def loadjsonParse(self):
+        '''This function parse the json format data named inputConfig.json'''
+        with open('inputConfig.json','r') as f:
+            coord=json.load(f)
+            for i in coord['coordinateXY']['X']:
+                global list_x
+                list_x.append(i)
+                #print(list_x)
+            for j in coord['coordinateXY']['Y']:
+                global list_y
+                list_y.append(j)    
+                #print(list_y)
+
+
+
+    def makeCustomised(self):
+        self.erase()
+        for i,j in zip(list_x,list_y):
+                    self.set(i+HX, j+HY)
+       
 
     def glider(self):
         self.erase()
@@ -165,7 +190,7 @@ class LifeBoard:
         key = (x, y)
         if key in self.state:
             turtle.setpos(x * CELL_SIZE, y * CELL_SIZE)
-            turtle.color('blue')
+            turtle.color('red')
             turtle.pendown()
             turtle.setheading(0)
             turtle.begin_fill()
@@ -184,6 +209,7 @@ class LifeBoard:
 
 
 def main():
+    '''This is the starting function main() which defines several config of shapes and random configuration  '''
     scr = turtle.Screen()
     turtle.mode('standard')
     xsize, ysize = scr.screensize()
@@ -194,24 +220,31 @@ def main():
     turtle.tracer(0, 0)
     turtle.penup()
 
-    board = LifeBoard(xsize // CELL_SIZE, 1 + ysize // CELL_SIZE)
-    print("\n1.glider\n2.Small Exploder\n3.Exploder\n4.10 Cell Row\n5.Light Weight Spaceship\n6.Tumbler')")
-    prefer=int(input('Enter your preference:'))
-    print("You have preffered:",prefer)
+    board = GameOfLife(xsize // CELL_SIZE, 1 + ysize // CELL_SIZE)
+    prefer=turtle.textinput("Select Configuration","\n1.glider\n2.Small Exploder\n3.Exploder\n4.10 Cell Row\n5.Light Weight Spaceship\n6.Tumbler\n7.Random\n8.Customised")
+
+    #print("\n1.glider\n2.Small Exploder\n3.Exploder\n4.10 Cell Row\n5.Light Weight Spaceship\n6.Tumbler\n7.Random")
+    #prefer=int(input('Enter your preference:'))
+    #print("You have preffered:",prefer)
     
-    def switch_demo(argument):
-        switcher = {
-        1: board.glider(),
-        2: board.smallExploder(),
-        3: board.Exploder(),
-        4: board.tenCellRow(),
-        5: board.lightWeightSpacehip(),
-        6: board.tumbler(),
+    if prefer=='1':
+        board.glider()
+    elif prefer=='2':
+        board.smallExploder()
+    elif prefer=='3':
+        board.Exploder()
+    elif prefer=='4':
+        board.tenCellRow()
+    elif prefer=='5':
+        board.lightWeightSpacehip()
+    elif prefer=='6':
+        board.tumbler()
+    elif prefer=='7':
+        board.makeRandom()
+    elif prefer=='8':
+        board.loadjsonParse()
+        board.makeCustomised()
         
-    }
-       
-        return switcher.get(argument, "Invalid preference")
-    switch_demo(prefer)
     board.display()
 
     # Continuous movement
@@ -231,13 +264,14 @@ def main():
             turtle.ontimer(perform_step, 30)
             global count
             count+=1
-        #    print(count)
+            print(count)
 
     turtle.ontimer(step_continuous)
 
     # Tk loop
     turtle.listen()
     turtle.mainloop()
+    turtle.bye()
 
 
 if __name__ == '__main__':
